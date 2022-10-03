@@ -18,7 +18,7 @@ module.exports.createCard = (req, res, next) => {
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send(INVALID_DATA_MESSAGE);
+        res.status(400).send({ message: INVALID_DATA_MESSAGE });
       } else {
         next(err);
       }
@@ -30,7 +30,9 @@ module.exports.removeCard = (req, res, next) => {
     .orFail(new NotFoundError(NOT_FOUND_CARD_ID_MESSAGE))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'NotFound') {
+        res.status(400).send({ message: NOT_FOUND_CARD_ID_MESSAGE });
+      } else if (err.name === 'CastError') {
         res.status(404).send({ message: INVALID_DATA_MESSAGE });
       } else {
         next(err);
@@ -48,7 +50,7 @@ module.exports.setLike = (req, res, next) => {
     .then((cards) => res.send(cards))
     .catch((err) => {
       if (err.name === 'NotFound') {
-        res.status(404).send(NOT_FOUND_CARD_ID_MESSAGE);
+        res.status(400).send({ message: NOT_FOUND_CARD_ID_MESSAGE });
       } else if (err.name === 'CastError') {
         res.status(404).send({ message: INVALID_DATA_MESSAGE });
       } else {
@@ -67,7 +69,7 @@ module.exports.removeLike = (req, res, next) => {
     .then((cards) => res.send(cards))
     .catch((err) => {
       if (err.name === 'NotFound') {
-        res.status(404).send({ message: NOT_FOUND_CARD_ID_MESSAGE });
+        res.status(400).send({ message: NOT_FOUND_CARD_ID_MESSAGE });
       } else if (err.name === 'CastError') {
         res.status(404).send({ message: INVALID_DATA_MESSAGE });
       } else {

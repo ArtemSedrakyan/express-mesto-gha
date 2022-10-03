@@ -16,7 +16,7 @@ module.exports.getUserId = (req, res, next) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'NotFound') {
-        next(err);
+        res.status(404).send({ message: NOT_FOUND_USER_ID_MESSAGE });
       } else if (err.name === 'CastError') {
         res.status(400).send({ message: INVALID_DATA_MESSAGE });
       } else {
