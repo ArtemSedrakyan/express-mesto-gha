@@ -11,7 +11,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use((req, res, next) => {
   req.user = {
-    _id: '633858febd539eb4fd0a0f11'
+    _id: '633858febd539eb4fd0a0f11',
   };
 
   next();
@@ -23,6 +23,10 @@ mongoose.connect('mongodb://localhost:27017/mestodb');
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
+app.use((req, res) => {
+  res.status(404).send({ message: 'Запрашиваемые данные не найдены' });
+});
+
 app.listen(PORT, () => {
-    console.log(`App listening on port ${PORT}`);
+  console.log(`App listening on port ${PORT}`);
 });

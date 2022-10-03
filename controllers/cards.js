@@ -1,54 +1,77 @@
 const Card = require('../models/card');
+const {
+  INVALID_DATA_MESSAGE,
+  NOT_FOUND_CARD_ID_MESSAGE,
+} = require('../utils/constants');
+const NotFoundError = require('../errors/NotFoundError');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
-    .then(cards => res.send({ cards }))
-    .catch((err) => {
-      const ERROR_CODE = 404;
-      if (err.name === 'UserNotFound')
-      return res.status(ERROR_CODE).send({
-        "message": "Карточки не найдены"
-      })
-    });
+    .then((cards) => res.send({ cards }))
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
-    .then(card => res.send({ data: card }))
+    .then((card) => res.send({ data: card }))
     .catch((err) => {
-      const ERROR_CODE = 400;
-      if (err.name === 'IncorrectRequestData')
-      return res.status(ERROR_CODE).send({
-        "message": "Переданы некорректные данные"
-      })
+      if (err.name === 'ValidationError') {
+        res.status(400).send(INVALID_DATA_MESSAGE);
+      } else {
+        next(err);
+      }
     });
 };
 
-module.exports.removeCard = (req, res) => {
+module.exports.removeCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
-    .then(user => res.send({data: user}))
-    .catch(() => res.status(500).send({message: 'Произошла ошибка'}));
+    .orFail(new NotFoundError(NOT_FOUND_CARD_ID_MESSAGE))
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send(INVALID_DATA_MESSAGE);
+      } else {
+        next(err);
+      }
+    });
 };
 
-module.exports.setLike = (req, res) => {
+module.exports.setLike = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    {$addToSet: {likes: req.user._id } },
-    { new: true }
+    { $addToSet: { likes: req.user._id } },
+    { new: true },
   )
-  .then(cards => res.send(cards))
-  .catch(() => res.status(500).send({message: 'Произошла ошибка'}));
+    .orFail(new NotFoundError(NOT_FOUND_CARD_ID_MESSAGE))
+    .then((cards) => res.send(cards))
+    .catch((err) => {
+      if (err.name === 'NotFound') {
+        res.status(404).send(NOT_FOUND_CARD_ID_MESSAGE);
+      } else if (err.name === 'CastError') {
+        res.status(400).send(INVALID_DATA_MESSAGE);
+      } else {
+        next(err);
+      }
+    });
 };
 
-module.exports.removeLike = (req, res) => {
+module.exports.removeLike = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $pull: {likes: req.user._id} },
-    {new: true}
+    { $pull: { likes: req.user._id } },
+    { new: true },
   )
-  .then(cards => res.send(cards))
-  .catch(() => res.status(500).send({message: 'Произошла ошибка'}));
+    .orFail(new NotFoundError(NOT_FOUND_CARD_ID_MESSAGE))
+    .then((cards) => res.send(cards))
+    .catch((err) => {
+      if (err.name === 'NotFound') {
+        res.status(404).send(NOT_FOUND_CARD_ID_MESSAGE);
+      } else if (err.name === 'CastError') {
+        res.status(400).send(INVALID_DATA_MESSAGE);
+      } else {
+        next(err);
+      }
+    });
 };
-
