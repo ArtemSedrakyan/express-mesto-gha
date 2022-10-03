@@ -18,7 +18,7 @@ module.exports.getUserId = (req, res, next) => {
       if (err.name === 'NotFound') {
         next(err);
       } else if (err.name === 'CastError') {
-        res.status(400).send(INVALID_DATA_MESSAGE);
+        res.status(400).send({ message: INVALID_DATA_MESSAGE });
       } else {
         next(err);
       }
@@ -31,7 +31,7 @@ module.exports.createUser = (req, res, next) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send(INVALID_DATA_MESSAGE);
+        res.status(400).send({ message: INVALID_DATA_MESSAGE });
       } else {
         next(err);
       }
@@ -48,7 +48,7 @@ module.exports.updateUser = (req, res, next) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send(INVALID_DATA_MESSAGE);
+        res.status(400).send({ message: INVALID_DATA_MESSAGE });
       } else {
         next(err);
       }
@@ -65,7 +65,7 @@ module.exports.updateAvatar = (req, res, next) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send(INVALID_DATA_MESSAGE);
+        res.status(400).send({ message: INVALID_DATA_MESSAGE });
       } else {
         next(err);
       }

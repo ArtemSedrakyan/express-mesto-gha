@@ -31,7 +31,7 @@ module.exports.removeCard = (req, res, next) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send(INVALID_DATA_MESSAGE);
+        res.status(404).send({ message: INVALID_DATA_MESSAGE });
       } else {
         next(err);
       }
@@ -50,7 +50,7 @@ module.exports.setLike = (req, res, next) => {
       if (err.name === 'NotFound') {
         res.status(404).send(NOT_FOUND_CARD_ID_MESSAGE);
       } else if (err.name === 'CastError') {
-        res.status(400).send(INVALID_DATA_MESSAGE);
+        res.status(404).send({ message: INVALID_DATA_MESSAGE });
       } else {
         next(err);
       }
@@ -67,9 +67,9 @@ module.exports.removeLike = (req, res, next) => {
     .then((cards) => res.send(cards))
     .catch((err) => {
       if (err.name === 'NotFound') {
-        res.status(404).send(NOT_FOUND_CARD_ID_MESSAGE);
+        res.status(404).send({ message: NOT_FOUND_CARD_ID_MESSAGE });
       } else if (err.name === 'CastError') {
-        res.status(400).send(INVALID_DATA_MESSAGE);
+        res.status(404).send({ message: INVALID_DATA_MESSAGE });
       } else {
         next(err);
       }
