@@ -3,7 +3,7 @@ const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const NotAuthorizedError = require('../errors/NotAuthorizedError');
 const { UNAUTHORIZED_USER_MESSAGE } = require('../utils/constants');
-const { isMatchRegExp } = require('../middlewares/validation');
+const { isMatchedRegExp } = require('../middlewares/validation');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
     validate: {
-      validator: (avatar) => isMatchRegExp(avatar),
+      validator: (avatar) => isMatchedRegExp(avatar),
       message: 'Введен некорректный адрес',
     },
   },

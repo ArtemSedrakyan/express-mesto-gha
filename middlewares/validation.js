@@ -1,10 +1,10 @@
 const { celebrate, Joi } = require('celebrate');
-const { validator } = require('validator');
+const validator = require('validator');
 const BadRequestError = require('../errors/BadRequestError');
 const { INVALID_DATA_MESSAGE } = require('../utils/constants');
 
 const validateLink = (link) => {
-  if (!validator.isURL(link, { required_protocol: true })) {
+  if (!validator.isURL(link, { require_protocol: true })) {
     throw new BadRequestError(INVALID_DATA_MESSAGE);
   } else {
     return link;
@@ -20,7 +20,7 @@ const loginValidation = celebrate({
 
 const getUserIdValidation = celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().hex().required(),
+    userId: Joi.string().length(24).hex().required(),
   }).unknown(true),
 });
 
@@ -56,11 +56,11 @@ const createCardValidation = celebrate({
 
 const getCardIdValidation = celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().hex().required(),
+    cardId: Joi.string().length(24).hex().required(),
   }).unknown(true),
 });
 
-const isMatchRegExp = (link) => /^(https?:\/\/)(www\.)?(\w^_-\.)+(\w-~:\/\?#\[\]@!\$&'\(\)\*+,;=)#?$/.test(link);
+const isMatchedRegExp = (link) => /^(https?:\/\/)(www\.)?([\w-]+.)+[\w-]+(\/[\w-./?#@!&',;=#])?$/.test(link);
 
 module.exports = {
   loginValidation,
@@ -70,5 +70,5 @@ module.exports = {
   updateAvatarValidation,
   createCardValidation,
   getCardIdValidation,
-  isMatchRegExp,
+  isMatchedRegExp,
 };
