@@ -1,51 +1,92 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const {
-  SERVER_ERROR_CODE,
-  BAD_REQUEST_CODE,
-  NOT_FOUND_CODE,
-  SERVER_ERROR_MESSAGE,
   INVALID_DATA_MESSAGE,
+  UNAUTHORIZED_USER_MESSAGE,
   NOT_FOUND_USER_ID_MESSAGE,
   CAST_ERROR_MESSAGE,
+  USER_CONFLICT_MESSAGE,
 } = require('../utils/constants');
 const NotFoundError = require('../errors/NotFoundError');
+const BadRequestError = require('../errors/BadRequestError');
+const NotAuthorizedError = require('../errors/NotAuthorizedError');
+const UserConflictError = require('../errors/UserConflictError');
 
-module.exports.getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.send({ users }))
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'jsonwebtoken', { expiresIn: '7d' });
+
+      res.cookie('jwt', token, {
+        maxAge: 3600000,
+        httpOnly: true,
+      });
+      res.send({ token });
+    })
     .catch(() => {
-      res.status(SERVER_ERROR_CODE).send({ message: SERVER_ERROR_MESSAGE });
+      next(new NotAuthorizedError(UNAUTHORIZED_USER_MESSAGE));
     });
 };
 
-module.exports.getUserId = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
+  User.find({})
+    .then((users) => res.send({ users }))
+    .catch(next);
+};
+
+module.exports.getUserId = (req, res, next) => {
   User.findById(req.params.userId).orFail(new NotFoundError(NOT_FOUND_USER_ID_MESSAGE))
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'NotFound') {
-        res.status(NOT_FOUND_CODE).send({ message: NOT_FOUND_USER_ID_MESSAGE });
+        next(new NotFoundError(NOT_FOUND_USER_ID_MESSAGE));
       } else if (err.name === 'CastError') {
-        res.status(BAD_REQUEST_CODE).send({ message: CAST_ERROR_MESSAGE });
+        next(new BadRequestError(CAST_ERROR_MESSAGE));
       } else {
-        res.status(SERVER_ERROR_CODE).send({ message: SERVER_ERROR_MESSAGE });
+        next(err);
       }
     });
 };
 
-module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+module.exports.getCurrentUser = (req, res, next) => {
+  const userId = req.user._id;
+  User.findById(userId).orFail(new NotFoundError(NOT_FOUND_USER_ID_MESSAGE))
+    .then((user) => res.send(user))
+    .catch((err) => {
+      if (err.name === 'NotFound') {
+        next(new NotFoundError(NOT_FOUND_USER_ID_MESSAGE));
+      } else if (err.name === 'CastError') {
+        next(new BadRequestError(CAST_ERROR_MESSAGE));
+      } else {
+        next(err);
+      }
+    });
+};
+
+module.exports.createUser = (req, res, next) => {
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(BAD_REQUEST_CODE).send({ message: INVALID_DATA_MESSAGE });
+      if (err.code === 11000) {
+        next(new UserConflictError(USER_CONFLICT_MESSAGE));
+      } else if (err.name === 'ValidationError') {
+        next(new BadRequestError(INVALID_DATA_MESSAGE));
       } else {
-        res.status(SERVER_ERROR_CODE).send({ message: SERVER_ERROR_MESSAGE });
+        next(err);
       }
     });
 };
 
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -55,14 +96,14 @@ module.exports.updateUser = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(BAD_REQUEST_CODE).send({ message: INVALID_DATA_MESSAGE });
+        next(new BadRequestError(INVALID_DATA_MESSAGE));
       } else {
-        res.status(SERVER_ERROR_CODE).send({ message: SERVER_ERROR_MESSAGE });
+        next(err);
       }
     });
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -72,9 +113,9 @@ module.exports.updateAvatar = (req, res) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(BAD_REQUEST_CODE).send({ message: INVALID_DATA_MESSAGE });
+        next(new BadRequestError(INVALID_DATA_MESSAGE));
       } else {
-        res.status(SERVER_ERROR_CODE).send({ message: SERVER_ERROR_MESSAGE });
+        next(err);
       }
     });
 };
