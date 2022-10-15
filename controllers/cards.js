@@ -40,15 +40,14 @@ module.exports.removeCard = (req, res, next) => {
 
       if (user === cardOwner) {
         Card.findByIdAndRemove(req.params.cardId)
-          .then((removedCard) => res.send(removedCard));
+          .then((removedCard) => res.send(removedCard))
+          .catch(next);
       } else {
         next(new ForbiddenError(FORBIDDEN_ERROR_MESSAGE));
       }
     })
     .catch((err) => {
-      if (err.name === 'NotFound') {
-        next(new NotFoundError(NOT_FOUND_CARD_ID_MESSAGE));
-      } else if (err.name === 'CastError') {
+      if (err.name === 'CastError') {
         next(new BadRequestError(CAST_ERROR_MESSAGE));
       } else {
         next(err);
@@ -65,9 +64,7 @@ module.exports.setLike = (req, res, next) => {
     .orFail(new NotFoundError(NOT_FOUND_CARD_ID_MESSAGE))
     .then((cards) => res.send(cards))
     .catch((err) => {
-      if (err.name === 'NotFound') {
-        next(new NotFoundError(NOT_FOUND_CARD_ID_MESSAGE));
-      } else if (err.name === 'CastError') {
+      if (err.name === 'CastError') {
         next(new BadRequestError(CAST_ERROR_MESSAGE));
       } else {
         next(err);
@@ -84,9 +81,7 @@ module.exports.removeLike = (req, res, next) => {
     .orFail(new NotFoundError(NOT_FOUND_CARD_ID_MESSAGE))
     .then((cards) => res.send(cards))
     .catch((err) => {
-      if (err.name === 'NotFound') {
-        next(new NotFoundError(NOT_FOUND_CARD_ID_MESSAGE));
-      } else if (err.name === 'CastError') {
+      if (err.name === 'CastError') {
         next(new BadRequestError(CAST_ERROR_MESSAGE));
       } else {
         next(err);

@@ -41,9 +41,7 @@ module.exports.getUserId = (req, res, next) => {
   User.findById(req.params.userId).orFail(new NotFoundError(NOT_FOUND_USER_ID_MESSAGE))
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'NotFound') {
-        next(new NotFoundError(NOT_FOUND_USER_ID_MESSAGE));
-      } else if (err.name === 'CastError') {
+      if (err.name === 'CastError') {
         next(new BadRequestError(CAST_ERROR_MESSAGE));
       } else {
         next(err);
@@ -56,9 +54,7 @@ module.exports.getCurrentUser = (req, res, next) => {
   User.findById(userId).orFail(new NotFoundError(NOT_FOUND_USER_ID_MESSAGE))
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'NotFound') {
-        next(new NotFoundError(NOT_FOUND_USER_ID_MESSAGE));
-      } else if (err.name === 'CastError') {
+      if (err.name === 'CastError') {
         next(new BadRequestError(CAST_ERROR_MESSAGE));
       } else {
         next(err);

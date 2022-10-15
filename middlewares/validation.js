@@ -21,16 +21,16 @@ const loginValidation = celebrate({
 const getUserIdValidation = celebrate({
   params: Joi.object().keys({
     userId: Joi.string().length(24).hex().required(),
-  }).unknown(true),
+  }),
 });
 
 const createUserValidation = celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required(),
-    name: Joi.string().min(2).max(30).default('Жак-Ив Кусто'),
-    about: Joi.string().min(2).max(30).default('Исследователь'),
-    avatar: Joi.string().custom(validateLink).default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().custom(validateLink),
   }),
 });
 
@@ -57,7 +57,7 @@ const createCardValidation = celebrate({
 const getCardIdValidation = celebrate({
   params: Joi.object().keys({
     cardId: Joi.string().length(24).hex().required(),
-  }).unknown(true),
+  }),
 });
 
 const isMatchedRegExp = (link) => /^(https?:\/\/)(www\.)?([\w-]+.)+[\w-]+(\/[\w-./?#@!&',;=#])?$/.test(link);

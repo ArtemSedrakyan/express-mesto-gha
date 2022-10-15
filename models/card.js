@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { isMatchedRegExp } = require('../middlewares/validation');
 
 const cardSchema = new mongoose.Schema({
   name: {
@@ -10,6 +11,10 @@ const cardSchema = new mongoose.Schema({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator: (link) => isMatchedRegExp(link),
+      message: 'Введен некорректный адрес',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
