@@ -11,12 +11,14 @@ const {
   createUserValidation,
 } = require('../middlewares/validation');
 const NotFoundError = require('../errors/NotFoundError');
+const { signOut } = require('../controllers/signOut');
 
 router.post('/signin', loginValidation, login);
 router.post('/signup', createUserValidation, createUser);
 
 router.use(auth);
 
+router.get('/signout', signOut);
 router.use('/users', userRouter);
 router.use('/cards', cardRouter);
 
