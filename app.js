@@ -10,14 +10,14 @@ const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 // Слушаем 3000 порт
 const { PORT = 3000 } = process.env;
-const app = express();
 
+const app = express();
 app.use(corsMiddleware);
+mongoose.connect('mongodb://localhost:27017/mestodb');
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-mongoose.connect('mongodb://localhost:27017/mestodb');
 
 app.use(requestLogger);
 
