@@ -1,27 +1,19 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
 const router = require('./routes/index');
 const error = require('./middlewares/error');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
+const corsMiddleware = require('./middlewares/cors');
 
 // Слушаем 3000 порт
 const { PORT = 3000 } = process.env;
 
 const app = express();
-app.use(cors({
-  origin: [
-    'https://sedrakyan.mesto.nomoredomains.icu',
-    'http://sedrakyan.mesto.nomoredomains.icu',
-    'https://localhost:3000',
-    'http://localhost:3000',
-  ],
-  credentials: true,
-}));
+app.use(corsMiddleware);
 mongoose.connect('mongodb://localhost:27017/mestodb');
 
 app.use(bodyParser.json());
